@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ontario Electrical Service Load Estimator | Dust 2 Engineering Inc.</title>
+<style>
+:root{color-scheme:dark}
+body{background:#0e1116;color:#e6e9ee;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;padding:24px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:1.55rem;line-height:1.25;margin:.2em 0 .1em}
+h2{font-size:1.15rem;margin-top:1.6em;color:#ffd479}
+.sub{color:#9fb0c3;margin:.2em 0 1.2em}
+.card{background:#161b22;border:1px solid #2b333f;border-radius:12px;padding:18px;margin:14px 0}
+label{display:block;margin:.7em 0 .25em;color:#c8d3e0;font-size:.95rem}
+input,select{width:100%;box-sizing:border-box;background:#0e1116;color:#e6e9ee;border:1px solid #39424f;border-radius:8px;padding:9px;font-size:1rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+button{background:#f0a832;color:#14100a;border:0;border-radius:8px;padding:11px 18px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:14px}
+button.ghost{background:#232a35;color:#e6e9ee}
+pre{background:#0a0d11;border:1px solid #2b333f;border-radius:10px;padding:14px;white-space:pre-wrap;word-break:break-word;font-size:.92rem}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid #2b333f;padding:6px 8px;text-align:left}
+th{background:#1b212b}
+.small{color:#9fb0c3;font-size:.88rem}
+a{color:#7cc4ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Ontario Electrical Service Load Estimator</h1>
+<p class="sub">Rough-size the electrical service for a small commercial unit from its connected loads — planning estimate with stated demand factors.</p>
+<div class="card">
+<div class="row"><div><label>Lighting (kW connected)</label><input id="light" type="number" value="6" min="0" step="0.1"></div>
+<div><label>Kitchen / process equipment (kW)</label><input id="kitchen" type="number" value="45" min="0" step="0.1"></div></div>
+<div class="row"><div><label>HVAC (kW)</label><input id="hvac" type="number" value="18" min="0" step="0.1"></div>
+<div><label>Receptacles (kW)</label><input id="rec" type="number" value="8" min="0" step="0.1"></div></div>
+<div class="row"><div><label>Other loads (kW)</label><input id="other" type="number" value="5" min="0" step="0.1"></div>
+<div><label>Service type</label><select id="sys"><option value="3ph208">120/208 V, 3-phase</option><option value="1ph240">120/240 V, single-phase</option></select></div></div>
+<button onclick="go()">Estimate service size</button>
+</div>
+<h2>Result</h2>
+<pre id="out">Your service estimate will appear here.</pre>
+<p class="small">Planning demand factors used here: lighting 100%, kitchen equipment 80%, HVAC 100%,
+receptacles 50%, other 100%. They are stated openly so the estimate can be argued with — the number that
+goes on a permit application comes from the Canadian Electrical Code Section 8 calculation by the
+electrical designer. This tool answers the earlier question: roughly how big a service does this unit
+need, and is the existing 200 A panel going to survive the new kitchen?</p>
+<p class="small">Free tool by <b>Dust 2 Engineering Inc.</b>, Mississauga, Ontario — building permit
+drawings for restaurants and small commercial projects across the GTA, stamped by an Ontario P.Eng.
+Flat rate $3,500–$5,000. Questions or a project to discuss: open an issue in this repository.</p>
+</div>
+<script>
+
+const SIZES = [60, 100, 125, 150, 200, 225, 300, 400, 600, 800];
+function go(){
+  const g = function(id){ return parseFloat(document.getElementById(id).value) || 0; };
+  const parts = [['Lighting', g('light'), 1.0], ['Kitchen equipment', g('kitchen'), 0.8], ['HVAC', g('hvac'), 1.0], ['Receptacles', g('rec'), 0.5], ['Other', g('other'), 1.0]];
+  let conn = 0, dem = 0, lines = '';
+  parts.forEach(function(x){ conn += x[1]; const d = x[1] * x[2]; dem += d; lines += x[0] + ': ' + x[1] + ' kW connected x ' + x[2] + ' = ' + d.toFixed(1) + ' kVA demand\n'; });
+  const sys = document.getElementById('sys').value;
+  const amps = sys === '3ph208' ? dem * 1000 / (1.732 * 208) : dem * 1000 / 240;
+  const size = SIZES.find(function(s){ return s >= amps; });
+  let out = lines + 'Connected load: ' + conn.toFixed(1) + ' kW | Demand load: ' + dem.toFixed(1) + ' kVA\n';
+  out += 'At ' + (sys === '3ph208' ? '120/208 V 3-phase' : '120/240 V single-phase') + ': ' + amps.toFixed(0) + ' A -> ' + (size ? ('standard service size ' + size + ' A') : 'beyond the 800 A sizes in this estimator') + '\n';
+  out += 'Planning estimate only. The permit design uses the Canadian Electrical Code Section 8 demand calculation, and ESA inspection governs in Ontario.';
+  document.getElementById('out').textContent = out;
+}
+
+</script>
+</body>
+</html>
