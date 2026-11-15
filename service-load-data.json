@@ -1,0 +1,30 @@
+{
+  "method": "Preliminary planning estimate, NOT a Canadian Electrical Code Rule 8-200/8-202 calculation.",
+  "steps": [
+    "Sum connected loads by category (kW).",
+    "Apply the demand factor the designer chooses for each category.",
+    "Add continuous-load margin where the design requires it.",
+    "Convert demand kVA to amps: 3-phase 120/208 V: A = kVA x 1000 / (1.732 x 208); single-phase 120/240 V: A = kVA x 1000 / 240.",
+    "Round up to a standard service size."
+  ],
+  "standard_service_sizes_a": [
+    60,
+    100,
+    125,
+    150,
+    200,
+    225,
+    300,
+    400,
+    600,
+    800
+  ],
+  "default_demand_factors_for_planning": {
+    "lighting": 1.0,
+    "kitchen_equipment": 0.8,
+    "hvac": 1.0,
+    "receptacles": 0.5,
+    "other": 1.0
+  },
+  "note": "Kitchen equipment demand of 80% is a common planning assumption for multiple appliances; the governing demand calculation for permit is the CEC Section 8 method applied by the electrical designer, and the ESA inspection governs in Ontario."
+}
